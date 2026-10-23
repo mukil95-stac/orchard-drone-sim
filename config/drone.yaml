@@ -1,0 +1,10 @@
+mass: 2.0
+arm_length: 0.40
+kf: 6.5e-7
+km: 9.75e-9
+motor_time_constant: 0.045
+maximum_rpm: 30000
+minimum_rpm: 0
+sensor_noise_accel: 0.08
+sensor_noise_gyro: 0.008
+wind_force: 0.008

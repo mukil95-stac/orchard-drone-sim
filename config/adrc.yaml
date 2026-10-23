@@ -1,0 +1,5 @@
+position_bandwidth: 1.2
+observer_bandwidth: 5.0
+velocity_gain: 2.8
+max_acceleration: 1.8
+max_tilt: 0.35

@@ -1,0 +1,4 @@
+capacity_wh: 2.2
+reserve_wh: 0.32
+safe_node_margin: 1.4
+power_coefficient: 1.0e-10

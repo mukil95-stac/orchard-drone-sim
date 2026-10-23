@@ -1,0 +1,3 @@
+[console_scripts]
+orchard_sim = orchard_bringup.simulation_node:main
+

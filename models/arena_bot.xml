@@ -1,0 +1,117 @@
+<mujoco model="9x5_arena_bot">
+  <compiler angle="radian" autolimits="true"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast"/>
+  <visual><global offwidth="1280" offheight="720"/><map znear=".01"/></visual>
+  <default>
+    <joint damping=".08" armature=".002"/>
+    <geom friction="1.2 .01 .001" condim="3" rgba=".35 .38 .42 1"/>
+    <motor ctrlrange="-12 12"/>
+  </default>
+  <worldbody>
+    <light pos="0 0 5" dir="0 0 -1" diffuse=".8 .8 .8"/>
+    <geom name="floor" type="plane" size="4.5 2.5 .1" rgba=".72 .74 .70 1"/>
+    <geom name="north_wall" type="box" pos="0 2.53 .25" size="4.55 .03 .25" rgba=".15 .2 .25 1"/>
+    <geom name="south_wall" type="box" pos="0 -2.53 .25" size="4.55 .03 .25" rgba=".15 .2 .25 1"/>
+    <geom name="east_wall" type="box" pos="4.53 0 .25" size=".03 2.5 .25" rgba=".15 .2 .25 1"/>
+    <geom name="west_wall" type="box" pos="-4.53 0 .25" size=".03 2.5 .25" rgba=".15 .2 .25 1"/>
+    <body name="bot" pos="0 0 .135">
+      <freejoint name="chassis_free"/>
+      <inertial pos="0 0 0" mass="3" diaginertia=".0275 .0425 .065"/>
+      <geom name="chassis" type="box" size=".20 .15 .075" mass="3" rgba=".12 .38 .72 1"/>
+      <geom name="top_panel" type="box" pos="0 0 .077" size=".13 .105 .004" mass=".08" rgba=".08 .12 .18 1"/>
+      <!-- Four driven 12 cm diameter wheels, with axle along local X. -->
+      <body name="wheel_fl" pos="-.125 .12 -.075"><joint name="wheel_fl_hinge" type="hinge" axis="-1 0 0"/><geom name="wheel_fl_geom" type="cylinder" size=".06 .025" quat=".7071068 0 .7071068 0" mass=".22" rgba=".055 .06 .07 1"/></body>
+      <body name="wheel_fr" pos=".125 .12 -.075"><joint name="wheel_fr_hinge" type="hinge" axis="-1 0 0"/><geom name="wheel_fr_geom" type="cylinder" size=".06 .025" quat=".7071068 0 .7071068 0" mass=".22" rgba=".055 .06 .07 1"/></body>
+      <body name="wheel_rl" pos="-.125 -.12 -.075"><joint name="wheel_rl_hinge" type="hinge" axis="-1 0 0"/><geom name="wheel_rl_geom" type="cylinder" size=".06 .025" quat=".7071068 0 .7071068 0" mass=".22" rgba=".055 .06 .07 1"/></body>
+      <body name="wheel_rr" pos=".125 -.12 -.075"><joint name="wheel_rr_hinge" type="hinge" axis="-1 0 0"/><geom name="wheel_rr_geom" type="cylinder" size=".06 .025" quat=".7071068 0 .7071068 0" mass=".22" rgba=".055 .06 .07 1"/></body>
+      <!-- Heights are measured up from the chassis top (z = 7.5 cm). -->
+      <camera name="front_webcam" pos="0 .04 .325" quat=".7071068 .7071068 0 0" fovy="75"/>
+      <site name="imu_site" pos="0 0 .095" size=".008" rgba=".2 .9 .3 1"/>
+      <site name="lidar_center" pos="0 0 .125" size=".008" rgba="1 .25 .1 1"/>
+      <!-- 36 horizontal rangefinder beams, 10 degrees apart. -->
+      <site name="lidar_00" pos="0 0 .125" euler="-1.5707963 0 0" size=".002"/>
+      <site name="lidar_01" pos="0 0 .125" euler="-1.5707963 0 -.1745329" size=".002"/>
+      <site name="lidar_02" pos="0 0 .125" euler="-1.5707963 0 -.3490659" size=".002"/>
+      <site name="lidar_03" pos="0 0 .125" euler="-1.5707963 0 -.5235988" size=".002"/>
+      <site name="lidar_04" pos="0 0 .125" euler="-1.5707963 0 -.6981317" size=".002"/>
+      <site name="lidar_05" pos="0 0 .125" euler="-1.5707963 0 -.8726646" size=".002"/>
+      <site name="lidar_06" pos="0 0 .125" euler="-1.5707963 0 -1.0471976" size=".002"/>
+      <site name="lidar_07" pos="0 0 .125" euler="-1.5707963 0 -1.2217305" size=".002"/>
+      <site name="lidar_08" pos="0 0 .125" euler="-1.5707963 0 -1.3962634" size=".002"/>
+      <site name="lidar_09" pos="0 0 .125" euler="-1.5707963 0 -1.5707963" size=".002"/>
+      <site name="lidar_10" pos="0 0 .125" euler="-1.5707963 0 -1.7453293" size=".002"/>
+      <site name="lidar_11" pos="0 0 .125" euler="-1.5707963 0 -1.9198622" size=".002"/>
+      <site name="lidar_12" pos="0 0 .125" euler="-1.5707963 0 -2.0943951" size=".002"/>
+      <site name="lidar_13" pos="0 0 .125" euler="-1.5707963 0 -2.2689280" size=".002"/>
+      <site name="lidar_14" pos="0 0 .125" euler="-1.5707963 0 -2.4434609" size=".002"/>
+      <site name="lidar_15" pos="0 0 .125" euler="-1.5707963 0 -2.6179939" size=".002"/>
+      <site name="lidar_16" pos="0 0 .125" euler="-1.5707963 0 -2.7925268" size=".002"/>
+      <site name="lidar_17" pos="0 0 .125" euler="-1.5707963 0 -2.9670597" size=".002"/>
+      <site name="lidar_18" pos="0 0 .125" euler="-1.5707963 0 -3.1415927" size=".002"/>
+      <site name="lidar_19" pos="0 0 .125" euler="-1.5707963 0 -3.3161256" size=".002"/>
+      <site name="lidar_20" pos="0 0 .125" euler="-1.5707963 0 -3.4906585" size=".002"/>
+      <site name="lidar_21" pos="0 0 .125" euler="-1.5707963 0 -3.6651914" size=".002"/>
+      <site name="lidar_22" pos="0 0 .125" euler="-1.5707963 0 -3.8397244" size=".002"/>
+      <site name="lidar_23" pos="0 0 .125" euler="-1.5707963 0 -4.0142573" size=".002"/>
+      <site name="lidar_24" pos="0 0 .125" euler="-1.5707963 0 -4.1887902" size=".002"/>
+      <site name="lidar_25" pos="0 0 .125" euler="-1.5707963 0 -4.3633231" size=".002"/>
+      <site name="lidar_26" pos="0 0 .125" euler="-1.5707963 0 -4.5378561" size=".002"/>
+      <site name="lidar_27" pos="0 0 .125" euler="-1.5707963 0 -4.7123890" size=".002"/>
+      <site name="lidar_28" pos="0 0 .125" euler="-1.5707963 0 -4.8869219" size=".002"/>
+      <site name="lidar_29" pos="0 0 .125" euler="-1.5707963 0 -5.0614548" size=".002"/>
+      <site name="lidar_30" pos="0 0 .125" euler="-1.5707963 0 -5.2359878" size=".002"/>
+      <site name="lidar_31" pos="0 0 .125" euler="-1.5707963 0 -5.4105207" size=".002"/>
+      <site name="lidar_32" pos="0 0 .125" euler="-1.5707963 0 -5.5850536" size=".002"/>
+      <site name="lidar_33" pos="0 0 .125" euler="-1.5707963 0 -5.7595865" size=".002"/>
+      <site name="lidar_34" pos="0 0 .125" euler="-1.5707963 0 -5.9341195" size=".002"/>
+      <site name="lidar_35" pos="0 0 .125" euler="-1.5707963 0 -6.1086524" size=".002"/>
+    </body>
+  </worldbody>
+  <actuator>
+    <motor name="drive_fl" joint="wheel_fl_hinge" gear=".6"/>
+    <motor name="drive_fr" joint="wheel_fr_hinge" gear=".6"/>
+    <motor name="drive_rl" joint="wheel_rl_hinge" gear=".6"/>
+    <motor name="drive_rr" joint="wheel_rr_hinge" gear=".6"/>
+  </actuator>
+  <sensor>
+    <accelerometer name="imu_accelerometer" site="imu_site"/>
+    <gyro name="imu_gyroscope" site="imu_site"/>
+    <framequat name="imu_orientation" objtype="site" objname="imu_site"/>
+    <rangefinder name="lidar_00_range" site="lidar_00"/>
+    <rangefinder name="lidar_01_range" site="lidar_01"/>
+    <rangefinder name="lidar_02_range" site="lidar_02"/>
+    <rangefinder name="lidar_03_range" site="lidar_03"/>
+    <rangefinder name="lidar_04_range" site="lidar_04"/>
+    <rangefinder name="lidar_05_range" site="lidar_05"/>
+    <rangefinder name="lidar_06_range" site="lidar_06"/>
+    <rangefinder name="lidar_07_range" site="lidar_07"/>
+    <rangefinder name="lidar_08_range" site="lidar_08"/>
+    <rangefinder name="lidar_09_range" site="lidar_09"/>
+    <rangefinder name="lidar_10_range" site="lidar_10"/>
+    <rangefinder name="lidar_11_range" site="lidar_11"/>
+    <rangefinder name="lidar_12_range" site="lidar_12"/>
+    <rangefinder name="lidar_13_range" site="lidar_13"/>
+    <rangefinder name="lidar_14_range" site="lidar_14"/>
+    <rangefinder name="lidar_15_range" site="lidar_15"/>
+    <rangefinder name="lidar_16_range" site="lidar_16"/>
+    <rangefinder name="lidar_17_range" site="lidar_17"/>
+    <rangefinder name="lidar_18_range" site="lidar_18"/>
+    <rangefinder name="lidar_19_range" site="lidar_19"/>
+    <rangefinder name="lidar_20_range" site="lidar_20"/>
+    <rangefinder name="lidar_21_range" site="lidar_21"/>
+    <rangefinder name="lidar_22_range" site="lidar_22"/>
+    <rangefinder name="lidar_23_range" site="lidar_23"/>
+    <rangefinder name="lidar_24_range" site="lidar_24"/>
+    <rangefinder name="lidar_25_range" site="lidar_25"/>
+    <rangefinder name="lidar_26_range" site="lidar_26"/>
+    <rangefinder name="lidar_27_range" site="lidar_27"/>
+    <rangefinder name="lidar_28_range" site="lidar_28"/>
+    <rangefinder name="lidar_29_range" site="lidar_29"/>
+    <rangefinder name="lidar_30_range" site="lidar_30"/>
+    <rangefinder name="lidar_31_range" site="lidar_31"/>
+    <rangefinder name="lidar_32_range" site="lidar_32"/>
+    <rangefinder name="lidar_33_range" site="lidar_33"/>
+    <rangefinder name="lidar_34_range" site="lidar_34"/>
+    <rangefinder name="lidar_35_range" site="lidar_35"/>
+  </sensor>
+</mujoco>

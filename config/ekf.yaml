@@ -1,0 +1,4 @@
+imu_accel_variance: 0.04
+aruco_position_variance: 0.025
+aruco_angle_variance: 0.08
+max_visual_innovation: 4.0

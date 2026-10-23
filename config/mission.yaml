@@ -1,0 +1,4 @@
+inspection_altitude: 2.2
+view_offset: 6.0
+inspection_dwell: 1.5
+inspection_order: [4, 5, 6, 3, 2, 1, 7, 8, 9]

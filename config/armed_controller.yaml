@@ -1,0 +1,21 @@
+# Tuned for the 2 kg MuJoCo quadrotor to approach orchard inspection viewpoints.
+position_bandwidth: 0.95
+observer_bandwidth: 5.0
+velocity_gain: 3.0
+max_acceleration: 1.2
+max_tilt: 0.24
+acceleration_slew_rate: 2.4
+roll_kp: 0.45
+pitch_kp: 0.45
+yaw_kp: 0.02
+rate_kd: 0.28
+marker_standoff: 4.0
+marker_height_offset: -0.45
+marker_lock_max_range: 7.0
+marker_capture_staging_radius: 2.0
+marker_capture_speed: 0.8
+arrival_tolerance: 0.5
+arrival_velocity_tolerance: 0.35
+takeoff_altitude: 2.0
+takeoff_tolerance: 0.25
+takeoff_velocity_tolerance: 0.35
