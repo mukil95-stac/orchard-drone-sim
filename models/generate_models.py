@@ -21,6 +21,8 @@ def drone_visual_parts():
 <geom name="camera_frame_rail_right" type="capsule" fromto=".075 .115 .005 .048 .245 .012" size=".012" rgba=".10 .11 .12 1" contype="0" conaffinity="0"/>
 <geom name="camera_nose_bridge" type="box" pos="0 .220 .012" size=".055 .018 .012" rgba=".075 .085 .095 1" contype="0" conaffinity="0"/>
 <geom name="flight_controller_stack" type="cylinder" pos="0 -.014 .050" size=".038 .015" rgba=".10 .16 .18 1" contype="0" conaffinity="0"/>
+<geom name="top_lidar_mount" type="cylinder" pos="0 0 .095" size=".045 .012" rgba=".16 .18 .20 1" contype="0" conaffinity="0"/>
+<geom name="top_lidar_sensor" type="cylinder" pos="0 0 .122" size=".032 .018" rgba=".05 .32 .38 1" contype="0" conaffinity="0"/>
 <geom name="landing_leg_front_left" type="capsule" fromto="-.105 .115 -.025 -.155 .165 -.235" size=".012" rgba=".16 .17 .18 1" contype="1" conaffinity="1"/>
 <geom name="landing_leg_front_right" type="capsule" fromto=".105 .115 -.025 .155 .165 -.235" size=".012" rgba=".16 .17 .18 1" contype="1" conaffinity="1"/>
 <geom name="landing_leg_rear_left" type="capsule" fromto="-.105 -.115 -.025 -.155 -.165 -.235" size=".012" rgba=".16 .17 .18 1" contype="1" conaffinity="1"/>
@@ -95,9 +97,22 @@ def generate():
 ''')
     for n,(x,y) in enumerate(rotors,1):
         world.append(f'<site name="rotor_{n}" pos="{x} {y} 0" size=".012" rgba=".1 .5 .8 .7"/>')
-    world.append('</body></worldbody></mujoco>')
+    lidar_sites=[]
+    lidar_sensors=[]
+    for beam in range(16):
+        angle=2*math.pi*beam/16
+        # MuJoCo rangefinders measure along a site's local +Z axis. Rotate each
+        # site so the top-mounted ring provides a horizontal 360-degree scan.
+        half=angle/2
+        # qz(angle) * qy(90deg): local +Z points horizontally at this angle.
+        c=math.cos(math.pi/4); s=math.sin(math.pi/4)
+        lidar_sites.append(f'<site name="lidar_{beam:02d}" pos="0 0 .145" quat="{math.cos(half)*c:.7f} {-math.sin(half)*s:.7f} {math.cos(half)*s:.7f} {math.sin(half)*c:.7f}" size=".006" rgba=".05 .8 .9 .7"/>')
+        lidar_sensors.append(f'<rangefinder name="lidar_{beam:02d}" site="lidar_{beam:02d}" cutoff="30"/>')
+    lidar_xml=''.join(lidar_sites)
+    sensor_xml='<sensor>'+''.join(lidar_sensors)+'</sensor>'
+    world.append(lidar_xml+'</body></worldbody>'+sensor_xml+'</mujoco>')
     (ROOT/'models'/'orchard.xml').write_text(''.join(world))
     parts=''.join(f'<site name="rotor_{n}" pos="{x} {y} 0" size=".018"/>' for n,(x,y) in enumerate(rotors,1))
-    (ROOT/'models'/'drone.xml').write_text('''<mujoco model="huge_deadcat"><compiler angle="radian" inertiafromgeom="false"/><option timestep=".002" gravity="0 0 -9.81"/><worldbody><geom name="floor" type="plane" size="5 5 .1"/><body name="whoop" pos="0 0 1"><freejoint name="root"/><inertial pos="0 0 0" mass="2.0" diaginertia=".08 .08 .14"/><geom name="body" type="ellipsoid" size=".13 .15 .050"/>'''+drone_visual_parts()+'<site name="imu"/><camera name="front_camera" pos="0 .260 .020" quat=".7071068 .7071068 0 0" fovy="75"/>'+parts+'</body></worldbody></mujoco>')
+    (ROOT/'models'/'drone.xml').write_text('''<mujoco model="huge_deadcat"><compiler angle="radian" inertiafromgeom="false"/><option timestep=".002" gravity="0 0 -9.81"/><worldbody><geom name="floor" type="plane" size="5 5 .1"/><body name="whoop" pos="0 0 1"><freejoint name="root"/><inertial pos="0 0 0" mass="2.0" diaginertia=".08 .08 .14"/><geom name="body" type="ellipsoid" size=".13 .15 .050"/>'''+drone_visual_parts()+'<site name="imu"/><camera name="front_camera" pos="0 .260 .020" quat=".7071068 .7071068 0 0" fovy="75"/>'+parts+lidar_xml+'</body></worldbody>'+sensor_xml+'</mujoco>')
 
 if __name__=='__main__': generate()

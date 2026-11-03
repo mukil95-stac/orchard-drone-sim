@@ -89,6 +89,21 @@ Robotic Arm and Gripper
 Pick Verification / Safe Recovery
 ```
 
+The project is also exposed as two explicit parts:
+
+- `world/` contains the MuJoCo world viewer and points to the generated files
+  in `models/`.
+- `controller/` contains the controller entry point and connects it to the
+  world through `orchard_drone/runner.py`.
+
+View only the world with `python3 world/run_world.py`, or run the controller
+with `python3 controller/run_controller.py`. The original
+`python3 scripts/run_simulation.py` command remains supported.
+
+To view the live MuJoCo viewer, omit `--headless`; to see the map use `--map`. In ROS 2 Humble, `source /opt/ros/humble/setup.bash`, then `colcon build --symlink-install --base-paths ros2_ws/src`; run `ros2 launch orchard_bringup simulation.launch.py`. The same runner works without ROS.
+
+For manual flight, run `python3 scripts/run_simulation.py --manual`. The simulation opens the MuJoCo scene and a separate live front-camera window. Press **X** to arm: the drone rises vertically, then autonomously flies to a randomly selected remaining orchard tree. It uses nearby ArUco observations for position correction and approaches a point 4 m in front of the target marker. The top-mounted LiDAR adds horizontal repulsion when an obstacle is within 2 m, helping the controller steer around trees and the fence. At arrival, it scans the apple, saves an annotated camera image and JSON report under `data/scans/`, then disarms. The 16 LiDAR readings are available through `MuJoCoSim.lidar()` (`-1` means no hit). Press **Esc** or close the viewer to stop.
+
 ## 🛠️ Marker Durability Approach
 
 Conventional printed markers are easy to produce but may deteriorate with repeated handling and environmental exposure.

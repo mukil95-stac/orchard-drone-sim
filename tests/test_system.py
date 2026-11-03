@@ -16,6 +16,7 @@ def test_mjcf_orchard_drone_tree_marker_counts():
     assert sum((mujoco.mj_id2name(m,mujoco.mjtObj.mjOBJ_GEOM,i) or '').startswith('marker_') for i in range(m.ngeom))==9
     # One free drone joint plus four propeller animation hinges.
     assert m.ncam==1 and m.njnt==5
+    assert sum((mujoco.mj_id2name(m,mujoco.mjtObj.mjOBJ_SENSOR,i) or '').startswith('lidar_') for i in range(m.nsensor))==16
     assert {int((mujoco.mj_id2name(m,mujoco.mjtObj.mjOBJ_GEOM,i) or '')[-2:]) for i in range(m.ngeom) if (mujoco.mj_id2name(m,mujoco.mjtObj.mjOBJ_GEOM,i) or '').startswith('marker_')}==set(range(1,10))
 
 def test_generated_aruco_pngs_and_opencv_detector():
@@ -33,6 +34,8 @@ def test_camera_imu_and_delayed_motor_rpm():
     # From the launch pad the centerline camera faces marker 08 in the nearest row.
     assert any(d['id']==8 and d['corners'].shape==(4,2) for d in vision.detect(image))
     acc,gyro,q=sim.imu(); assert acc.shape==(3,) and gyro.shape==(3,) and q.shape==(4,)
+    # MuJoCo uses -1 for a rangefinder beam with no surface hit.
+    assert sim.lidar().shape==(16,) and np.all(sim.lidar()>=-1)
     sim.set_rpm([20000]*4); sim.step(); assert 0<sim.rpm[0]<20000; sim.renderer.close()
 
 def test_mixer_allocation_and_adrc_response():

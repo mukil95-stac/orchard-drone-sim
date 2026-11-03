@@ -1,9 +1,9 @@
 from pathlib import Path
-import argparse, json, math, yaml
+import argparse, json, math, random, yaml
 import numpy as np
 from scipy.spatial.transform import Rotation
 from .core import ADRC, EKF, Mission, Battery, MotorMixer, OrchardGraph, DroneParams, TREE_POSITIONS, ORDER, AppleVision
-from .armed_controller import ArmedADRCController
+from .armed_controller import ArmedADRCController, lidar_avoidance_acceleration
 from .simulator import MuJoCoSim
 
 class Simulation:
@@ -50,8 +50,11 @@ class Simulation:
         sim=self.sim; target=self.ekf.x[:3].copy(); armed=False; command_lock=threading.Lock()
         manual_marker_world=None; final_setpoint=None; phase='DISARMED'; takeoff_target=None
         yaw_target=float(self.ekf.x[11])
-        first_tree=self.mission.next_tree or self.mission_config.get('inspection_order',ORDER)[0]
+        remaining=[tree for tree in ORDER if tree not in self.mission.done]
+        first_tree=random.choice(remaining or ORDER)
         staging_target=self.viewpoint(first_tree,'A')
+        visited_trees=set()
+        hover_until=0.0
         print(f'X arm/disarm | vertical takeoff, then approach tree {first_tree:02d} | Esc quit')
         def on_key(key):
             nonlocal armed, target, manual_marker_world, final_setpoint, phase, takeoff_target, yaw_target
@@ -85,7 +88,7 @@ class Simulation:
                     armed_now=armed; target_now=target.copy(); yaw_now=yaw_target
                 if armed_now:
                     motor_rpm=self.armed_controller.update(
-                        self.ekf.x[:3],self.ekf.x[3:6],self.ekf.x[9:12],gyro,target_now,dt,yaw_now
+                        self.ekf.x[:3],self.ekf.x[3:6],self.ekf.x[9:12],gyro,target_now,dt,yaw_now,sim.lidar()
                     )
                     sim.set_rpm(motor_rpm)
                 else:
@@ -130,12 +133,24 @@ class Simulation:
                                 and takeoff_xy_speed<=.6):
                             target=staging_target.copy(); phase='APPROACH'
                             print(f'\nTakeoff stable; moving forward to tree {first_tree:02d}')
+                    if armed and phase=='HOVER' and sim.data.time>=hover_until:
+                        candidates=[tree for tree in ORDER if tree not in visited_trees and tree not in self.mission.done]
+                        if candidates:
+                            first_tree=random.choice(candidates)
+                            staging_target=self.viewpoint(first_tree,'A')
+                            manual_marker_world=None; final_setpoint=None
+                            target=staging_target.copy(); phase='APPROACH'
+                            print(f'\n5-second hover complete; moving to next tree {first_tree:02d}')
+                        else:
+                            armed=False; target=self.ekf.x[:3].copy(); phase='COMPLETE'
+                            print('\nAll selected trees visited; disarming')
                     reached_setpoint=armed and phase=='FINAL_APPROACH' and np.linalg.norm(self.ekf.x[:3]-final_setpoint)<=self.arrival_tolerance and np.linalg.norm(self.ekf.x[3:6])<=self.arrival_velocity_tolerance
                     if reached_setpoint:
-                        armed=False; target=self.ekf.x[:3].copy(); phase='COMPLETE'
+                        visited_trees.add(first_tree)
+                        target=self.ekf.x[:3].copy(); phase='HOVER'; hover_until=sim.data.time+5.0
+                        print(f'\nReached tree {first_tree:02d}; hovering for 5 seconds')
                 if reached_setpoint:
-                    sim.set_rpm(np.zeros(4))
-                    print(f'\nReached marker setpoint within {self.arrival_tolerance:.1f} m at low speed; disarming')
+                    print(f'Reached marker setpoint within {self.arrival_tolerance:.1f} m at low speed; scanning')
                     self.scan_apple(sim,sim.image(),first_tree)
                 viewer.sync()
                 time.sleep(max(0.,dt-(time.perf_counter()-cycle_start)))
@@ -236,6 +251,7 @@ class Simulation:
                 p,v=sim.pose()[0],sim.velocity(); epos=self.ekf.x[:3]; evel=self.ekf.x[3:6]
                 # ADRC outer loop returns acceleration; attitude/wrench allocation tracks tilt and yaw.
                 a=self.adrc.update(epos,evel,target,dt)
+                a += lidar_avoidance_acceleration(sim.lidar(), self.ekf.x[11])
                 roll,pitch,yaw=self.ekf.x[9:12]
                 desired_roll=np.clip(-a[1]/9.81,-.4,.4); desired_pitch=np.clip(a[0]/9.81,-.4,.4)
                 thrust=sim.params.mass*(9.81+a[2])/max(.75,math.cos(roll)*math.cos(pitch))

@@ -15,6 +15,7 @@ class MuJoCoSim:
         self.propeller_dofs=[self.model.jnt_dofadr[mujoco.mj_name2id(self.model,mujoco.mjtObj.mjOBJ_JOINT,f'propeller_spin_{i}')] for i in range(1,5)]
         self.propeller_visual_speed_scale=.025
         self.camera=mujoco.mj_name2id(self.model,mujoco.mjtObj.mjOBJ_CAMERA,'front_camera')
+        self.lidar_ids=[mujoco.mj_name2id(self.model,mujoco.mjtObj.mjOBJ_SENSOR,f'lidar_{i:02d}') for i in range(16)]
         mujoco.mj_forward(self.model,self.data)
         self.marker_positions={i:np.array([((i-1)%3-1)*8.+1.8,(1-(i-1)//3)*8.-.670,.95]) for i in range(1,10)}
     @property
@@ -50,3 +51,7 @@ class MuJoCoSim:
     def image(self):
         if self.renderer is None: self.renderer=mujoco.Renderer(self.model,height=480,width=640)
         self.renderer.update_scene(self.data,camera='front_camera'); self.last_image=self.renderer.render().copy(); return self.last_image
+
+    def lidar(self):
+        """Return the 16 top-mounted horizontal rangefinder readings in metres."""
+        return np.array([self.data.sensordata[self.model.sensor_adr[sensor_id]] for sensor_id in self.lidar_ids], dtype=float)

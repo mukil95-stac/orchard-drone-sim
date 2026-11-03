@@ -1,14 +1,23 @@
-# Tuned for the 2 kg MuJoCo quadrotor to approach orchard inspection viewpoints.
-position_bandwidth: 0.95
-observer_bandwidth: 5.0
-velocity_gain: 3.0
-max_acceleration: 1.2
-max_tilt: 0.24
-acceleration_slew_rate: 2.4
-roll_kp: 0.45
-pitch_kp: 0.45
+# PID gains for the 2 kg MuJoCo quadrotor waypoint controller.
+position_kp: 0.55
+position_ki: 0.03
+position_kd: 1.35
+integral_limit: 1.5
+max_acceleration: 0.65
+max_tilt: 0.07
+acceleration_slew_rate: 0.9
+# Smooth waypoint transitions and motor commands to reduce visible jerks.
+target_slew_rate: 0.8
+rpm_slew_rate: 30000.0
+horizontal_acceleration_limit: 0.35
+lidar_safe_distance: 2.0
+lidar_max_distance: 3.0
+lidar_avoidance_gain: 1.8
+lidar_avoidance_max_acceleration: 1.0
+roll_kp: 0.85
+pitch_kp: 0.85
 yaw_kp: 0.02
-rate_kd: 0.28
+rate_kd: 0.45
 marker_standoff: 4.0
 marker_height_offset: -0.45
 marker_lock_max_range: 7.0
